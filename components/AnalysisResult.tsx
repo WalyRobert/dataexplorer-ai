@@ -1,0 +1,8 @@
+import React,{useEffect,useMemo,useRef,useState} from 'react';
+export function extractPython(content:string){return /```(?:python|py)[ \t]*\r?\n([\s\S]*?)```/i.exec(content)?.[1].trim()??null;}
+export default function AnalysisResult({content}:{content:string}){
+ const code=useMemo(()=>extractPython(content),[content]),[url,setUrl]=useState(''),[status,setStatus]=useState('');const timer=useRef<ReturnType<typeof setTimeout>>();
+ useEffect(()=>{if(!code){setUrl('');return;}const link=URL.createObjectURL(new Blob([code],{type:'text/x-python;charset=utf-8'}));setUrl(link);return()=>URL.revokeObjectURL(link);},[code]);useEffect(()=>()=>{if(timer.current)clearTimeout(timer.current);},[]);
+ async function copy(){try{if(!code)return;await navigator.clipboard.writeText(code);setStatus('Copiado');if(timer.current)clearTimeout(timer.current);timer.current=setTimeout(()=>setStatus(''),2000);}catch{setStatus('Não foi possível copiar. Selecione o código manualmente.');}}
+ return <section className="bg-slate-900 border border-slate-700 rounded-2xl p-6 space-y-5"><h2 className="text-2xl font-bold">Relatório sobre a amostra</h2><p className="text-sm text-slate-400">Texto gerado por IA, sujeito a erros. Sugestões e código exigem revisão; nenhum script é executado pelo aplicativo.</p><pre className="whitespace-pre-wrap break-words font-sans">{content}</pre>{code&&<><h3 className="font-bold">Código Python sugerido</h3><pre className="overflow-auto bg-slate-950 p-4 rounded text-sm"><code>{code}</code></pre><div className="flex gap-4">{url&&<a className="underline" href={url} download="analise_dados_sugerida.py">Baixar script sugerido</a>}<button className="underline" onClick={copy}>Copiar código</button></div><p role="status">{status}</p></>}</section>;
+}
