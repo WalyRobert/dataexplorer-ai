@@ -1,0 +1,3 @@
+import {it,expect} from 'vitest';import {profileDataset} from '../services/profile';import {parseDataset} from '../services/csv';
+it('calcula o arquivo inteiro e distingue ausência, texto e número',()=>{const d=parseDataset('n;tipo\n1;A\n2;B\n;A\n3;C');const r=profileDataset(d,['n','tipo']);expect(r[0]).toMatchObject({total:4,missing:1,numericCount:3,mean:2,min:1,max:3});expect(r[1]).toMatchObject({distinct:3,nonNumeric:4,mean:null});});
+it('não apresenta média parcial como média de coluna mista e não interpreta vírgula decimal automaticamente',()=>{const r=profileDataset(parseDataset('n\n1\n"1,5"\n1e309'),['n'])[0];expect(r.numericCount).toBe(1);expect(r.nonNumeric).toBe(2);expect(r.mean).toBeNull();});
